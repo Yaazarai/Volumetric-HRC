@@ -45,7 +45,7 @@ This has not been implemented--I've been working on this for too damn long.
 
 ### Aliasing Fix / Spatial Stability
 
-The largest deviation from the paper in terms of final result is going to be when I start my ray-extensions. The paper mentions to start extensions at cascade3. This however with my implementation provided a lot of aliasing and instability in moving light sources. This could be due to my insufferable need to not implement [DDA properly](https://aaaa.sh/creatures/dda-algorithm-interactive/) and instead opting for a [simpler variant of DDA](https://benedikt-bitterli.me/tantalum/) which does not handle edges and runs in constant-time. EIther way neither of these line algorithms are required when extending rays from cascade0. See below for a comparison, firt video extending from c0, second video extending from c3 using the simple DDA model.
+The largest deviation from the paper in terms of final result is going to be when I start my ray-extensions. The paper mentions to start extensions at cascade3. This however with my implementation provided a lot of aliasing and instability in moving light sources. This could be due to my insufferable need to not implement [DDA properly](https://aaaa.sh/creatures/dda-algorithm-interactive/) and instead opting for a [simpler variant of DDA](https://benedikt-bitterli.me/tantalum/) which does not handle edges and runs in constant-time. EIther way neither of these line algorithms are required when extending rays from cascade0. See below for a comparison, first video extending from c0, second video extending from c3 using the simple DDA model.
 
 The stability is basically perfect as far as discrete ray-tracing models go, with not even Vanilla RC able to match.
 
