@@ -1,9 +1,34 @@
 Constant-Time per-pixel volumetrics using ray-extensions via [Holographic Radiance Cascades](https://arxiv.org/abs/2505.02041). This implementation is the closest good-faith reproduction of the paper that I can manage with minor modifications to make setup easier and to reduce overall aliasing.
 
-Implementation provided in GameMaker and shoudl run with the free-version. Scenes are rendered volumetrically using two physical material properties: emissivity and absorption. Emissivity controls light emitted from each pixel and absorption controls how much light is absorbed by each pixel--note that emissive objects must be drawn TWICE, once as emissive and a secodn time with an absorption property. An example scene (see below) provided for reference on how to setup scenes. Note that object depth or render-order of objects to the scene will determine how occlusion works, render objects far -> near (assuming the far plane away from the camera is the floor and near-plane is the screen). Utilizing absorption and depth-order properly will lend a sense of dimensionality to your final scene.
-
 <img width="2048" height="2048" alt="HRC2k" src="https://github.com/user-attachments/assets/d9288305-5cc2-4de6-beee-6d863a3d65a8" />
 <p align="center">Simple 2048 x 2048 volumetric scene rendered on an RTX 3080.</p>
+
+### How HRC Works
+The premise of HRC is simple, cast rays in a 90-degree cone from every probe. The number of probes in the scene decreases along one-axis only (perpendicular to the frustum direction). This means we cast probes as planes evenly distributed throughout the scene and each successive cascade has 1/2x as many probes and 2x as many rays per probe. To be precise the exact number of rays-per-probe for each cascade is actually `pow2(N)+1`, where we cast one ray for every 2 pixels across the full width of the frustum of each cascade: `frustum_width = pow(2.0, cascade_index) * 2.0 + 1.0`. As the width of the frustum grows as the distance between planes in higher cascades increases.
+
+<img width="1420" height="497" alt="image" src="https://github.com/user-attachments/assets/55ab1989-8649-45c2-8f56-9e8a2cbfbe33" />
+
+### HRC Merging
+The merging model is much different than Vanilla RC. The idea is that we want to produce one cone for each discrete angular span between the rays cast of each cascades. For example in the image above c0 has 2 rays with one angular span between them (one cone), c2 has 3 rays = 2 cones, c3 has 5 rays = 4 cones. We're producing `N` cones from `N+1` rays--this can be seen in the image below.
+
+Producing the cones is as simple as looking up the left/right rays that bound the edge of the cone and merge each ray with 2 rays in cN+1 that start at their end-points.
+<img width="1579" height="857" alt="image" src="https://github.com/user-attachments/assets/df4f3a1a-0a45-47a6-8177-745462dba826" />
+
+Considering that we're casting "planes of probes," which produces discretely rectangular radiance, rays must also be weighted to produce the appropriate output fluence. Each cone of cN represents a fraction of the angular span of the full frustum and the left/right rays of the cone each represent 1/2 of that total angular span. So then to weight the rays we multiple each ray by 1/2 the cone's angular span BEFORE merging. This is done by multiplying each ray by 1/2 of `atan(right.y / right.x) - atan(left.y / left.x)`, where `atan()` here gives us the angle of each ray and we take the difference between the left/right rays as the angular span of the cone.
+<img width="796" height="771" alt="image" src="https://github.com/user-attachments/assets/c0ba6478-3b7e-4b55-a122-e50a59bbfb57" />
+
+We have two edge cases for merging: even & odd planes. Even plane's line up perfectly with cN+1 can merge with the nearest cN+1 plane, however even planes cannot. To solve this we need to cast 2x length rays for even plans and merge twice. Once for the near plane and once again for the far plane. We then take the MERGED results of both planes and interpolate their fluence. Interpolating before merging will break volumetrics. This strategy interpolates the FLUENCE (radiance at a point) not the relative position between both planes. This means you must merge the near and far planes as separate points of fluence and then interpolate them afterwards for the correct result.
+<img width="879" height="352" alt="image" src="https://github.com/user-attachments/assets/98050b82-2670-4ea0-9fa3-b8bfa1e62526" />
+
+
+When all is said and done this merging strategy produces the output of the diagram below.
+<img width="1244" height="1104" alt="image" src="https://github.com/user-attachments/assets/af832078-017c-4ad4-acc0-45643071c8cd" />
+
+I actually managed to reproduce the diagram for a single frustum within HRC itself by raytracing to planes 16x as far away--which verified my results were accurate.
+<img width="1015" height="1015" alt="image" src="https://github.com/user-attachments/assets/682453ac-4750-4bfe-8b30-f289cf66d7f4" />
+
+### Rendering Scenes / Depth Order
+Implementation provided in GameMaker and shoudl run with the free-version. Scenes are rendered volumetrically using two physical material properties: emissivity and absorption. Emissivity controls light emitted from each pixel and absorption controls how much light is absorbed by each pixel--note that emissive objects must be drawn TWICE, once as emissive and a secodn time with an absorption property. An example scene (see below) provided for reference on how to setup scenes. Note that object depth or render-order of objects to the scene will determine how occlusion works, render objects far -> near (assuming the far plane away from the camera is the floor and near-plane is the screen). Utilizing absorption and depth-order properly will lend a sense of dimensionality to your final scene.
 
 ### Performance Results (RTX 3080)
 * 256 x 256 ~ 1ms.
