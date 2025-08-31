@@ -8,13 +8,19 @@ The premise of HRC is simple, cast rays in a 90-degree cone from every probe. Th
 
 <img width="1420" height="497" alt="image" src="https://github.com/user-attachments/assets/55ab1989-8649-45c2-8f56-9e8a2cbfbe33" />
 
+### Tracing vs Ray Extensions
+Raytracing provides measurably worse results and worse aliasing, but more flexibility in the implementation. The major benefit of ray extensions is that each ray takes at most `log2(N)` samples to compute each ray in constant-time + angular diffusion across the cascades to minimize aliasing.
+
+To produce the rays themselves you can either ray-trace using DDA or line-algorithm of choice or you can use ray extensions. Ray extensions combine chained rays of cN-1 to formulate rays of cN. This is done by computing the upper/lower ray indexes of the nearest cN-1 ray-directions left/right of the current ray direction and extending those rays across two planes while flipping the ray indices to force the rays to converge.
+<img width="1024" height="433" alt="image" src="https://github.com/user-attachments/assets/be2564fd-d5af-4d7b-bdb2-c61fd2aed7e0" />
+
 ### HRC Merging
 The merging model is much different than Vanilla RC. The idea is that we want to produce one cone for each discrete angular span between the rays cast of each cascades. For example in the image above c0 has 2 rays with one angular span between them (one cone), c2 has 3 rays = 2 cones, c3 has 5 rays = 4 cones. We're producing `N` cones from `N+1` rays--this can be seen in the image below.
 
 Producing the cones is as simple as looking up the left/right rays that bound the edge of the cone and merge each ray with 2 rays in cN+1 that start at their end-points.
 <img width="1579" height="857" alt="image" src="https://github.com/user-attachments/assets/df4f3a1a-0a45-47a6-8177-745462dba826" />
 
-Considering that we're casting "planes of probes," which produces discretely rectangular radiance, rays must also be weighted to produce the appropriate output fluence. Each cone of cN represents a fraction of the angular span of the full frustum and the left/right rays of the cone each represent 1/2 of that total angular span. So then to weight the rays we multiple each ray by 1/2 the cone's angular span BEFORE merging. This is done by multiplying each ray by 1/2 of `atan(right.y / right.x) - atan(left.y / left.x)`, where `atan()` here gives us the angle of each ray and we take the difference between the left/right rays as the angular span of the cone.
+Considering that we're casting "planes of probes," which produces discretely rectangular radiance, rays must also be weighted to produce the appropriate output fluence. Each cone of cN represents a fraction of the angular span of the full frustum and the left/right rays of the cone each represent 1/2 of that total angular span. So then to weight the rays we multiple each ray by 1/2 the cone's angular span BEFORE merging. This is done by multiplying each ray by 1/2 of `atan(right.y / right.x) - atan(left.y / left.x)`, where `atan()` here gives us the angle of each ray and we take the difference between the left/right rays as the angular span of the cone. Note however that this requires rays to be 2x as long. In this case during merging when looking up our left/right rays we must extend them to 2x in length by chaining them across two planes.
 <img width="796" height="771" alt="image" src="https://github.com/user-attachments/assets/c0ba6478-3b7e-4b55-a122-e50a59bbfb57" />
 
 We have two edge cases for merging: even & odd planes. Even plane's line up perfectly with cN+1 can merge with the nearest cN+1 plane.
@@ -22,7 +28,6 @@ We have two edge cases for merging: even & odd planes. Even plane's line up perf
 
 However even planes cannot. To solve this we need to cast 2x length rays for even plans and merge twice. Once for the near plane and once again for the far plane. We then take the MERGED results of both planes and interpolate their fluence. Interpolating before merging will break volumetrics. This strategy interpolates the FLUENCE (radiance at a point) not the relative position between both planes. This means you must merge the near and far planes as separate points of fluence and then interpolate them afterwards for the correct result.
 <img width="879" height="352" alt="image" src="https://github.com/user-attachments/assets/98050b82-2670-4ea0-9fa3-b8bfa1e62526" />
-
 
 When all is said and done this merging strategy produces the output of the diagram below.
 <img width="1244" height="1104" alt="image" src="https://github.com/user-attachments/assets/af832078-017c-4ad4-acc0-45643071c8cd" />
