@@ -37,14 +37,14 @@ void mergeCone(vec2 probe, float plane, float intrv, float vrays, float index, f
  	vec2  merge = probe + align * (limit + vec2(0.0, vrayI * 2.0));
 	vec4  coneFR = getSample(merge, coneI, 1.0, 1.0, prev_radiance, prev_size);
 	vec4  coneFT = getSample(merge, coneI, 1.0, 1.0, prev_transmit, prev_size);
-	vec4  coneNR = getSample(probe, coneI, 1.0, 1.0, prev_radiance, prev_size);
-	vec4  coneNT = getSample(probe, coneI, 1.0, 1.0, prev_transmit, prev_size);
 	
 	vrayHR *= atan(vrayR.y / vrayR.x) - atan(vrayL.y / vrayL.x);
 	mergedR = vrayHR + (coneFR * vrayHT);
 	mergedT = vrayHT * coneFT;
 	
 	if (mod(plane, 2.0) == 0.0) {
+		vec4  coneNR = getSample(probe, coneI, 1.0, 1.0, prev_radiance, prev_size);
+		vec4  coneNT = getSample(probe, coneI, 1.0, 1.0, prev_transmit, prev_size);
 		mergedR = mix(mergedR, coneNR, 0.5);
 		mergedT = mix(mergedT, coneNT, 0.5);
 	}
