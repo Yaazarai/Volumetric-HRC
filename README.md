@@ -1,6 +1,6 @@
 Constant-Time per-pixel volumetrics using ray-extensions via [Holographic Radiance Cascades](https://arxiv.org/abs/2505.02041). This implementation is the closest good-faith reproduction of the paper that I can manage with minor modifications to make setup easier and to reduce overall aliasing.
 
-<img width="2048" height="2048" alt="HRC2k" src="https://github.com/user-attachments/assets/d9288305-5cc2-4de6-beee-6d863a3d65a8" />
+https://github.com/user-attachments/assets/ff941093-3b06-4b8b-ab77-c965a6c42fa6
 <p align="center">Simple 2048 x 2048 volumetric scene rendered on an RTX 3080 in 9ms.</p>
 
 ### How HRC Works
