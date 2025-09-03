@@ -13,7 +13,7 @@ Then we define a series of cones or angular spans between two rays which compute
 ### Tracing vs Ray Extensions
 Raytracing provides measurably worse results and worse aliasing, but more flexibility in the implementation. The major benefit of ray extensions is that each ray takes at most `log2(N)` samples to compute each ray in constant-time + angular diffusion across the cascades to minimize aliasing.
 
-To produce the rays themselves you can either ray-trace using DDA or line-algorithm of choice or you can use ray extensions. Ray extensions combine chained rays of cN-1 to formulate rays of cN. This is done by computing the upper/lower ray indexes of the nearest cN-1 ray-directions left/right of the current ray direction and extending those rays across two planes while flipping the ray indices to force the rays to converge.
+To produce the rays themselves you can either ray-trace using DDA or line-algorithm of choice or you can use ray extensions. Ray extensions combine chained rays of cN-1 to formulate rays of cN. This is done by computing the upper/lower ray indexes of the nearest cN-1 ray-directions left/right of the current ray direction and extending those rays across two planes while flipping the ray indices to force the rays to converge. This is only true for odd cN ray indices, where as even ray indices perfectly match up and do not require interpolating left/right rays.
 <img width="1024" height="433" alt="image" src="https://github.com/user-attachments/assets/be2564fd-d5af-4d7b-bdb2-c61fd2aed7e0" />
 
 ### HRC Merging
