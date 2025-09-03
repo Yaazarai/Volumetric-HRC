@@ -15,6 +15,7 @@ Raytracing provides measurably worse results and worse aliasing, but more flexib
 
 To produce the rays themselves you can either ray-trace using DDA or line-algorithm of choice or you can use ray extensions. Ray extensions combine chained rays of cN-1 to formulate rays of cN. This is done by computing the upper/lower ray indexes of the nearest cN-1 ray-directions left/right of the current ray direction and extending those rays across two planes while flipping the ray indices to force the rays to converge. This is only true for odd cN ray indices, where as even ray indices perfectly match up and do not require interpolating left/right rays.
 <img width="1024" height="433" alt="image" src="https://github.com/user-attachments/assets/be2564fd-d5af-4d7b-bdb2-c61fd2aed7e0" />
+<img width="1044" height="408" alt="image" src="https://github.com/user-attachments/assets/ea24732c-e1a0-4b87-b645-aaa073ed3627" />
 
 ### HRC Merging
 The merging model is much different than Vanilla RC. The idea is that we want to produce one cone for each discrete angular span between the rays cast of each cascades. For example in the image above c0 has 2 rays with one angular span between them (one cone), c2 has 3 rays = 2 cones, c3 has 5 rays = 4 cones. We're producing `N` cones from `N+1` rays--this can be seen in the image below.
