@@ -8,11 +8,16 @@ uniform vec2 prev_size;
 uniform vec2 cascade_size;
 uniform vec2 cascade_index;
 
-vec4 getSample(vec2 probe, float index, float interval, float lookupWidth, sampler2D sampler, vec2 resolution) {
+
+void getVolumetricSample(vec2 probe, float index, float interval, float lookupWidth, vec2 resolution, sampler2D txtR, sampler2D txtT, vec4 defValR, vec4 defValT, out vec4 rad, out vec4 trn) {
 	vec2 samplePos = vec2(floor(probe.x / interval) * lookupWidth, probe.y) + vec2(0.5, 0.0);
 	samplePos = vec2(samplePos.x + index, samplePos.y) / resolution;
-	return mix(texture2D(sampler, samplePos), vec4(0.0), float(floor(samplePos) != vec2(0.0)));
+	
+	float weight = float(floor(samplePos) != vec2(0.0));
+	rad = mix(texture2D(txtR, samplePos), defValR, weight);
+	trn = mix(texture2D(txtT, samplePos), defValT, weight);
 }
+
 
 void mergeCone(vec2 probe, float plane, float intrv, float vrays, float index, float side, out vec4 mergedR, out vec4 mergedT) {
 	float coneI = index * 2.0 + side;
@@ -23,28 +28,28 @@ void mergeCone(vec2 probe, float plane, float intrv, float vrays, float index, f
 	vec2  vrayL = (limit * 2.0) + vec2(0.0, (coneI * 2.0));
 	vec2  vrayR = (limit * 2.0) + vec2(0.0, (coneI + 1.0) * 2.0);
 	
-	vec4  vrayHR = getSample(probe, vrayI, intrv, vrays, vrays_radiance, vrays_size);
-	vec4  vrayHT = getSample(probe, vrayI, intrv, vrays, vrays_transmit, vrays_size);
+	vec4 vrayHR, vrayHT;
+	getVolumetricSample(probe, vrayI, intrv, vrays, vrays_size, vrays_radiance, vrays_transmit, vec4(0.0), vec4(1.0), vrayHR, vrayHT);
 	
 	if (mod(plane, 2.0) == 0.0) {
 		vec2  probe2 = probe + (limit + vec2(0.0, vrayI * 2.0));
-		vec4  vrayHR2 = getSample(probe2, vrayI, intrv, vrays, vrays_radiance, vrays_size);
-		vec4  vrayHT2 = getSample(probe2, vrayI, intrv, vrays, vrays_transmit, vrays_size);
+		vec4 vrayHR2, vrayHT2;
+		getVolumetricSample(probe2, vrayI, intrv, vrays, vrays_size, vrays_radiance, vrays_transmit, vec4(0.0), vec4(1.0), vrayHR2, vrayHT2);
 		vrayHR = vrayHR + (vrayHR2 * vrayHT);
 		vrayHT = vrayHT * vrayHT2;
 	}
 	
  	vec2  merge = probe + align * (limit + vec2(0.0, vrayI * 2.0));
-	vec4  coneFR = getSample(merge, coneI, 1.0, 1.0, prev_radiance, prev_size);
-	vec4  coneFT = getSample(merge, coneI, 1.0, 1.0, prev_transmit, prev_size);
+	vec4 coneFR, coneFT;
+	getVolumetricSample(merge, coneI, 1.0, 1.0, prev_size, prev_radiance, prev_transmit, vec4(0.0), vec4(1.0), coneFR, coneFT);
 	
 	vrayHR *= atan(vrayR.y / vrayR.x) - atan(vrayL.y / vrayL.x);
 	mergedR = vrayHR + (coneFR * vrayHT);
 	mergedT = vrayHT * coneFT;
 	
 	if (mod(plane, 2.0) == 0.0) {
-		vec4  coneNR = getSample(probe, coneI, 1.0, 1.0, prev_radiance, prev_size);
-		vec4  coneNT = getSample(probe, coneI, 1.0, 1.0, prev_transmit, prev_size);
+		vec4 coneNR, coneNT;
+		getVolumetricSample(probe, coneI, 1.0, 1.0, prev_size, prev_radiance, prev_transmit, vec4(0.0), vec4(1.0), coneNR, coneNT);
 		mergedR = mix(mergedR, coneNR, 0.5);
 		mergedT = mix(mergedT, coneNT, 0.5);
 	}

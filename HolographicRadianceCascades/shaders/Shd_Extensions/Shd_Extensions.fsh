@@ -7,19 +7,21 @@ uniform vec2 cascade_index;
 
 #define FRUSTUM_COUNT 4.0
 
-vec4 getSample(vec2 probe, float index, float interval, float lookupWidth, vec2 resolution, sampler2D sampler, vec4 defVal) {
+void getVolumetricSample(vec2 probe, float index, float interval, float lookupWidth, vec2 resolution, sampler2D txtR, sampler2D txtT, vec4 defValR, vec4 defValT, out vec4 rad, out vec4 trn) {
 	vec2 samplePos = vec2(floor(probe.x / interval) * lookupWidth, probe.y) + vec2(0.5, 0.0);
 	samplePos = vec2(samplePos.x + index, samplePos.y) / resolution;
-	return mix(texture2D(sampler, samplePos), defVal, float(floor(samplePos) != vec2(0.0)));
+	
+	float weight = float(floor(samplePos) != vec2(0.0));
+	rad = mix(texture2D(txtR, samplePos), defValR, weight);
+	trn = mix(texture2D(txtT, samplePos), defValT, weight);
 }
 
 void extendRay(vec2 probe, float lo_index, float hi_index, float prev_intrv, float prev_vrays, sampler2D samplerRadiance, sampler2D sampleTransmit, out vec4 radiance, out vec4 transmit) {
 	vec2 merge_pos = probe + vec2(prev_intrv, -prev_intrv + (lo_index * 2.0));
 	
-	vec4 radiance_min = getSample(probe, lo_index, prev_intrv, prev_vrays, prev_size, prev_radiance, vec4(0.0));
-	vec4 transmit_min = getSample(probe, lo_index, prev_intrv, prev_vrays, prev_size, prev_transmit, vec4(1.0));
-	vec4 radiance_max = getSample(merge_pos, hi_index, prev_intrv, prev_vrays, prev_size, prev_radiance, vec4(0.0));
-	vec4 transmit_max = getSample(merge_pos, hi_index, prev_intrv, prev_vrays, prev_size, prev_transmit, vec4(1.0));
+	vec4  radiance_min, transmit_min, radiance_max, transmit_max;
+	getVolumetricSample(probe, lo_index, prev_intrv, prev_vrays, prev_size, prev_radiance, prev_transmit, vec4(0.0), vec4(1.0), radiance_min, transmit_min);
+	getVolumetricSample(merge_pos, hi_index, prev_intrv, prev_vrays, prev_size, prev_radiance, prev_transmit, vec4(0.0), vec4(1.0), radiance_max, transmit_max);
 	
 	radiance = radiance_min + (transmit_min * radiance_max);
 	transmit = transmit_min * transmit_max;
