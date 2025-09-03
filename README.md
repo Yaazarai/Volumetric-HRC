@@ -1,4 +1,4 @@
-Constant-Time per-pixel volumetrics using ray-extensions via [Holographic Radiance Cascades](https://arxiv.org/abs/2505.02041). This implementation is the closest good-faith reproduction of the paper that I can manage with minor modifications to make setup easier and to reduce overall aliasing.
+Constant and real-time per-pixel volumetrics using ray-extensions via [Holographic Radiance Cascades](https://arxiv.org/abs/2505.02041). This implementation is the closest good-faith reproduction of the paper that I can manage with minor modifications to make setup easier and to reduce overall aliasing.
 
 https://github.com/user-attachments/assets/ff941093-3b06-4b8b-ab77-c965a6c42fa6
 <p align="center">Simple 2048 x 2048 volumetric scene rendered on an RTX 3080 in 9ms.</p>
@@ -38,7 +38,7 @@ I actually managed to reproduce the diagram for a single frustum within HRC itse
 <img width="1015" height="1015" alt="image" src="https://github.com/user-attachments/assets/682453ac-4750-4bfe-8b30-f289cf66d7f4" />
 
 ### Rendering Scenes / Depth Order
-Implementation provided in GameMaker and shoudl run with the free-version. Scenes are rendered volumetrically using two physical material properties: emissivity and absorption. Emissivity controls light emitted from each pixel and absorption controls how much light is absorbed by each pixel--note that emissive objects must be drawn TWICE, once as emissive and a secodn time with an absorption property. An example scene (see below) provided for reference on how to setup scenes. Note that object depth or render-order of objects to the scene will determine how occlusion works, render objects far -> near (assuming the far plane away from the camera is the floor and near-plane is the screen). Utilizing absorption and depth-order properly will lend a sense of dimensionality to your final scene.
+Implementation provided in GameMaker and should run with the free-version. Scenes are rendered volumetrically using two physical material properties: emissivity and absorption. Emissivity controls light emitted from each pixel and absorption controls how much light is absorbed by each pixel--note that emissive objects must be drawn TWICE, once as emissive and a second time with an absorption property. An example scene (see below) provided for reference on how to setup scenes. Note that object depth or render-order of objects to the scene will determine how occlusion works, render objects far -> near (assuming the far plane away from the camera is the floor and near-plane is the screen). Utilizing absorption and depth-order properly will lend a sense of dimensionality to your final scene.
 
 ### Performance Results (RTX 3080)
 * 256 x 256 ~ 1ms.
@@ -65,7 +65,7 @@ https://github.com/user-attachments/assets/8e474182-fca4-46f0-b83b-7b75a22b1d94
 
 https://github.com/user-attachments/assets/62730957-4870-4e41-8107-40b75a5bc0b6
 
-Vanill RC + Bilinear-Fix for reference with a 1px light on as 512x512 scene with 4x the ray-density (200ms). The results are not even comparable.
+Vanilla RC + Bilinear-Fix for reference with a 1px light on as 512x512 scene with 4x the ray-density (200ms). The results are not even comparable.
 
 <img width="1016" height="1024" alt="image" src="https://github.com/user-attachments/assets/75b6ce05-5f7c-4cab-8767-353c44d55125" />
 
