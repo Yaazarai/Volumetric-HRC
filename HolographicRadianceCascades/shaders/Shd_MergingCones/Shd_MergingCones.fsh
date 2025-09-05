@@ -8,8 +8,12 @@ uniform vec2 prev_size;
 uniform vec2 cascade_size;
 uniform vec2 cascade_index;
 
+void mergeRadiance(vec4 nearR, vec4 nearT, vec4 farR, vec4 farT, out vec4 radiance, out vec4 transmit) {
+	radiance = nearR + (farR * nearT);
+	transmit = nearT * farT;
+}
 
-void getVolumetricSample(vec2 probe, float index, float interval, float lookupWidth, vec2 resolution, sampler2D txtR, sampler2D txtT, vec4 defValR, vec4 defValT, out vec4 rad, out vec4 trn) {
+void getVolume(vec2 probe, float index, float interval, float lookupWidth, vec2 resolution, sampler2D txtR, sampler2D txtT, vec4 defValR, vec4 defValT, out vec4 rad, out vec4 trn) {
 	vec2 samplePos = vec2(floor(probe.x / interval) * lookupWidth, probe.y) + vec2(0.5, 0.0);
 	samplePos = vec2(samplePos.x + index, samplePos.y) / resolution;
 	
@@ -18,40 +22,37 @@ void getVolumetricSample(vec2 probe, float index, float interval, float lookupWi
 	trn = mix(texture2D(txtT, samplePos), defValT, weight);
 }
 
-
-void mergeCone(vec2 probe, float plane, float intrv, float vrays, float index, float side, out vec4 mergedR, out vec4 mergedT) {
+void mergeCone(vec2 probe, float plane, float intrv, float vrays, float index, float side, out vec4 radiance, out vec4 transmit) {
 	float coneI = index * 2.0 + side;
 	float vrayI = index + side;
 	vec2  limit = vec2(intrv, -intrv);
 	float align = 2.0 - mod(plane, 2.0);
 	
-	vec2  vrayL = (limit * 2.0) + vec2(0.0, (coneI * 2.0));
-	vec2  vrayR = (limit * 2.0) + vec2(0.0, (coneI + 1.0) * 2.0);
+	vec2  merge = probe + align * (limit + vec2(0.0, vrayI * 2.0));
+	vec2  vrayLL = (limit * 2.0) + vec2(0.0, (coneI * 2.0));
+	vec2  vrayRR = (limit * 2.0) + vec2(0.0, (coneI + 1.0) * 2.0);
+	float coneW = atan(vrayRR.y / vrayRR.x) - atan(vrayLL.y / vrayLL.x);
 	
-	vec4 vrayHR, vrayHT;
-	getVolumetricSample(probe, vrayI, intrv, vrays, vrays_size, vrays_radiance, vrays_transmit, vec4(0.0), vec4(1.0), vrayHR, vrayHT);
-	
-	if (mod(plane, 2.0) == 0.0) {
-		vec2  probe2 = probe + (limit + vec2(0.0, vrayI * 2.0));
-		vec4 vrayHR2, vrayHT2;
-		getVolumetricSample(probe2, vrayI, intrv, vrays, vrays_size, vrays_radiance, vrays_transmit, vec4(0.0), vec4(1.0), vrayHR2, vrayHT2);
-		vrayHR = vrayHR + (vrayHR2 * vrayHT);
-		vrayHT = vrayHT * vrayHT2;
-	}
-	
- 	vec2  merge = probe + align * (limit + vec2(0.0, vrayI * 2.0));
-	vec4 coneFR, coneFT;
-	getVolumetricSample(merge, coneI, 1.0, 1.0, prev_size, prev_radiance, prev_transmit, vec4(0.0), vec4(1.0), coneFR, coneFT);
-	
-	vrayHR *= atan(vrayR.y / vrayR.x) - atan(vrayL.y / vrayL.x);
-	mergedR = vrayHR + (coneFR * vrayHT);
-	mergedT = vrayHT * coneFT;
+	vec4  vrayR, vrayT, coneFarR, coneFarT;
+	getVolume(probe, vrayI, intrv, vrays, vrays_size, vrays_radiance, vrays_transmit, vec4(0.0), vec4(1.0), vrayR, vrayT);
+	getVolume(merge, coneI, 1.0, 1.0, prev_size, prev_radiance, prev_transmit, vec4(0.0), vec4(1.0), coneFarR, coneFarT);
 	
 	if (mod(plane, 2.0) == 0.0) {
-		vec4 coneNR, coneNT;
-		getVolumetricSample(probe, coneI, 1.0, 1.0, prev_size, prev_radiance, prev_transmit, vec4(0.0), vec4(1.0), coneNR, coneNT);
-		mergedR = mix(mergedR, coneNR, 0.5);
-		mergedT = mix(mergedT, coneNT, 0.5);
+		vec2 probeFar = probe + (limit + vec2(0.0, vrayI * 2.0));
+		vec2 probeNear = probe;
+		
+		vec4  vrayR_Ext, vrayT_Ext, coneNearR, coneNearT;
+		getVolume(probeFar, vrayI, intrv, vrays, vrays_size, vrays_radiance, vrays_transmit, vec4(0.0), vec4(1.0), vrayR_Ext, vrayT_Ext);
+		getVolume(probeNear, coneI, 1.0, 1.0, prev_size, prev_radiance, prev_transmit, vec4(0.0), vec4(1.0), coneNearR, coneNearT);
+		
+		mergeRadiance(vrayR, vrayT, vrayR_Ext, vrayT_Ext, vrayR, vrayT);
+		mergeRadiance(vrayR * coneW, vrayT, coneFarR, coneFarT, radiance, transmit);
+		
+		radiance = mix(radiance, coneNearR, 0.5);
+		transmit = mix(transmit, coneNearT, 0.5);
+	} else {
+		radiance = (vrayR * coneW) + (coneFarR * vrayT);
+		transmit = vrayT * coneFarT;
 	}
 }
 
@@ -60,7 +61,7 @@ void main() {
 	float intrv = pow(2.0, cascade_index.x);
 	float vrays = intrv + 1.0;
 	float plane = floor(texel.x / intrv);
-	float index = floor(texel.x) - (plane * intrv);
+	float index = floor(texel.x - (plane * intrv));
 	vec2  probe = vec2(plane * intrv, texel.y) + vec2(0.5, 0.0);
 	
 	vec4 radL, radR, trnL, trnR;

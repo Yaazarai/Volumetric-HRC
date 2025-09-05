@@ -7,7 +7,12 @@ uniform vec2 cascade_index;
 
 #define FRUSTUM_COUNT 4.0
 
-void getVolumetricSample(vec2 probe, float index, float interval, float lookupWidth, vec2 resolution, sampler2D txtR, sampler2D txtT, vec4 defValR, vec4 defValT, out vec4 rad, out vec4 trn) {
+void mergeRadiance(vec4 nearR, vec4 nearT, vec4 farR, vec4 farT, out vec4 radiance, out vec4 transmit) {
+	radiance = nearR + (farR * nearT);
+	transmit = nearT * farT;
+}
+
+void getVolume(vec2 probe, float index, float interval, float lookupWidth, vec2 resolution, sampler2D txtR, sampler2D txtT, vec4 defValR, vec4 defValT, out vec4 rad, out vec4 trn) {
 	vec2 samplePos = vec2(floor(probe.x / interval) * lookupWidth, probe.y) + vec2(0.5, 0.0);
 	samplePos = vec2(samplePos.x + index, samplePos.y) / resolution;
 	
@@ -17,14 +22,12 @@ void getVolumetricSample(vec2 probe, float index, float interval, float lookupWi
 }
 
 void extendRay(vec2 probe, float lo_index, float hi_index, float prev_intrv, float prev_vrays, sampler2D samplerRadiance, sampler2D sampleTransmit, out vec4 radiance, out vec4 transmit) {
-	vec2 merge_pos = probe + vec2(prev_intrv, -prev_intrv + (lo_index * 2.0));
+	vec2 merge = probe + vec2(prev_intrv, -prev_intrv + (lo_index * 2.0));
 	
-	vec4  radiance_min, transmit_min, radiance_max, transmit_max;
-	getVolumetricSample(probe, lo_index, prev_intrv, prev_vrays, prev_size, prev_radiance, prev_transmit, vec4(0.0), vec4(1.0), radiance_min, transmit_min);
-	getVolumetricSample(merge_pos, hi_index, prev_intrv, prev_vrays, prev_size, prev_radiance, prev_transmit, vec4(0.0), vec4(1.0), radiance_max, transmit_max);
-	
-	radiance = radiance_min + (transmit_min * radiance_max);
-	transmit = transmit_min * transmit_max;
+	vec4  radiance_near, transmit_near, radiance_far, transmit_far;
+	getVolume(probe, lo_index, prev_intrv, prev_vrays, prev_size, prev_radiance, prev_transmit, vec4(0.0), vec4(1.0), radiance_near, transmit_near);
+	getVolume(merge, hi_index, prev_intrv, prev_vrays, prev_size, prev_radiance, prev_transmit, vec4(0.0), vec4(1.0), radiance_far, transmit_far);
+	mergeRadiance(radiance_near, transmit_near, radiance_far, transmit_far, radiance, transmit);
 }
 
 void main() {
@@ -32,13 +35,14 @@ void main() {
 	float intrv = pow(2.0, cascade_index.x);
 	float vrays = intrv + 1.0;
 	float plane = floor(texel.x / vrays);
-	float index = floor(texel.x) - (plane * vrays);
+	float index = floor(texel.x - (plane * vrays));
 	vec2  probe = vec2(plane * intrv, texel.y) + vec2(0.5, 0.0);
 	
 	float prev_intrv = pow(2.0, cascade_index.x - 1.0);
 	float prev_vrays = prev_intrv + 1.0;
-	float lower = floor(index / 2.0);
-	float upper = ceil(index / 2.0);
+	
+	float lower = floor(index * 0.5);
+	float upper = ceil(index * 0.5);
 	
 	vec4 radianceL, radianceU, transmitL, transmitU;
 	extendRay(probe, lower, upper, prev_intrv, prev_vrays, prev_radiance, prev_transmit, radianceL, transmitL);
