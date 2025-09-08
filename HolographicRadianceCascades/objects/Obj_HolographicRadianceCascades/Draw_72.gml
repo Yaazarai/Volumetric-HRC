@@ -5,7 +5,7 @@ gpu_set_blendmode(bm_add);
 	var xx = view_hport[0] / render_extent;
 	var mx = floor(mouse_x / xx);
 	var my = floor(mouse_y / xx);
-	draw_circle(mx, my, 1, false);
+	draw_circle(mx, my, light_size, false);
 	
 	var yy = render_extent / view_hport[0];
 	draw_sprite_ext(Spr_EmissionTexture, 0, 0, 0, yy, yy, 0, c_white, 1);
@@ -20,9 +20,9 @@ gpu_set_blendmode(bm_add);
 	var xx = view_hport[0] / render_extent;
 	var mx = floor(mouse_x / xx);
 	var my = floor(mouse_y / xx);
-	draw_circle(mx, my, 1, false);
+	draw_circle(mx, my, light_size, false);
 	
-	//draw_sprite_ext(Spr_AbsorptionTexture, 0, 0, 0, yy, yy, 0, c_white, 1);
+	draw_sprite_ext(Spr_AbsorptionTexture, 0, 0, 0, yy, yy, 0, c_white, 1);
 gpu_set_blendmode(bm_normal);
 surface_reset_target();
 

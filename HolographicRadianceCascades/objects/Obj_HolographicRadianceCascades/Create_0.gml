@@ -4,7 +4,8 @@
 // square and a power of 2. Clip the final scene from the output.
 surface_depth_disable(false);
 game_set_speed(144*16.0, gamespeed_fps);
-render_extent = 2048;
+render_extent = 1024;
+light_size = 32.0;
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
@@ -30,7 +31,7 @@ for(var i = 0; i < render_count; i++) {
 	vrays_transmit[i] = surface_build(raysw, render_extent, surface_rgba8unorm, render_surflist);
 	
 	merge_radiance[i] = surface_build(conew, render_extent, surface_rgba16float, render_surflist);
-	merge_transmit[i] = surface_build(conew, render_extent, surface_rgba8unorm, render_surflist);
+	merge_transmit[i] = surface_build(conew, render_extent, surface_rgba16float, render_surflist);
 }
 
 for(var i = 0; i < 4; i++) {
