@@ -47,7 +47,7 @@ Implementation provided in GameMaker and should run with the free-version. Scene
 * 1024 x 1024 ~ 5-6ms.
 * 2048 x 2048 ~ 9-11ms.
 * 4096 x 4096 ~ 35-45ms.
-* 8,192 x 8,192 ~ 2,000ms / Crash (memory bound).
+* 8192 x 8192 ~ 2000ms / Crash (memory bound).
 
 ### Improving Performance
 While the current implementation is fast--especially considering its running per-pixel volumetrics--there is still room for improvement. The shaders can be modified to cast only 1/2x as many probes along each plane, then allow rays to interpolate between those probes when extending/merging. This will provide slight aliasing, but double performance where needed.
