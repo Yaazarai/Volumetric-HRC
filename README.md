@@ -1,7 +1,7 @@
 Constant and real-time per-pixel volumetrics using ray-extensions via [Holographic Radiance Cascades](https://arxiv.org/abs/2505.02041). This implementation is the closest good-faith reproduction of the paper that I can manage with minor modifications to make setup easier and to reduce overall aliasing.
 
 https://github.com/user-attachments/assets/ff941093-3b06-4b8b-ab77-c965a6c42fa6
-<p align="center">Simple 2048 x 2048 volumetric scene rendered on an RTX 3080 in 9ms.</p>
+<p align="center">Simple 2048 x 2048 volumetric scene rendered on an RTX 3080 in 11-12ms.</p>
 
 ### How HRC Works
 The premise of HRC is simple, cast rays in a 90-degree cone from every probe. The number of probes in the scene decreases along one-axis only (perpendicular to the frustum direction). This means we cast probes as planes evenly distributed throughout the scene and each successive cascade has 1/2x as many probes and 2x as many rays per probe. To be precise the exact number of rays-per-probe for each cascade is actually `pow2(N)+1`, where we cast one ray for every 2 pixels across the full width of the frustum of each cascade: `frustum_width = pow(2.0, cascade_index) * 2.0 + 1.0`. As the width of the frustum grows as the distance between planes in higher cascades increases.
