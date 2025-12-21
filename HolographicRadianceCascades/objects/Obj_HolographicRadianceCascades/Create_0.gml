@@ -4,7 +4,7 @@
 // square and a power of 2. Clip the final scene from the output.
 surface_depth_disable(false);
 game_set_speed(144*16.0, gamespeed_fps);
-render_extent = 1024;
+render_extent = 512;
 light_size = 32.0;
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////

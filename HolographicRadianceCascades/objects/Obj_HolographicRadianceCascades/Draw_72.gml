@@ -1,31 +1,31 @@
+var xx = 1024 / render_extent;
+var mx = floor(mouse_x / xx);
+var my = floor(mouse_y / xx);
+
 surface_set_target(render_emissivity.memory);
 draw_clear_alpha(c_black, 0);
-gpu_set_blendmode(bm_add);
+//gpu_set_blendmode(bm_add);
+	
 	draw_set_color($FFFFFF);
-	var xx = view_hport[0] / render_extent;
-	var mx = floor(mouse_x / xx);
-	var my = floor(mouse_y / xx);
 	draw_circle(mx, my, light_size, false);
 	
-	var yy = render_extent / view_hport[0];
-	draw_sprite_ext(Spr_EmissionTexture, 0, 0, 0, yy, yy, 0, c_white, 1);
-gpu_set_blendmode(bm_normal);
-	draw_set_color(c_black);
+//gpu_set_blendmode(bm_normal);
 surface_reset_target();
+draw_set_color(c_black);
 
 surface_set_target(render_absorption.memory);
 draw_clear_alpha(c_black, 0);
 gpu_set_blendmode(bm_add);
+	
 	draw_set_color($FFFFFF);
-	var xx = view_hport[0] / render_extent;
-	var mx = floor(mouse_x / xx);
-	var my = floor(mouse_y / xx);
 	draw_circle(mx, my, light_size, false);
 	
-	draw_sprite_ext(Spr_AbsorptionTexture, 0, 0, 0, yy, yy, 0, c_white, 1);
+	draw_set_color($444444);
+	draw_circle(floor(render_extent / 2), floor(render_extent / 2), light_size * 3.0, false);
+	
 gpu_set_blendmode(bm_normal);
 surface_reset_target();
-
+draw_set_color(c_black);
 /*
 	This is how you build and render your volumetric scene:
 		Emissivity - Amount of light each pixel must emit.

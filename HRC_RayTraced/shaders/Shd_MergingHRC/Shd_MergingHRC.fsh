@@ -21,13 +21,19 @@ vec2 rotate(vec2 uvcoord, float frustum) {
 
 // Raytrace the scene, but using rotated UV coordinates for right-facing only frustums.
 void trace(vec2 rxy, vec2 dxy, float interval, out vec4 radiance, out vec4 transmit) {
-	const float step_size = 1.0;
 	radiance = vec4(0.0);
 	transmit = vec4(1.0);
+	
+	///////////////////////////////////////////////
+	// Cosign term for sampling higher at an angle.
+	float theta = atan(dxy.y / dxy.x);
+	float step_size = abs(cos(theta));
+	///////////////////////////////////////////////
+	
 	vec2 delta = dxy / max(abs(dxy.x), abs(dxy.y));
 	vec2 inv_size = 1.0 / cascade_size;
 	for(float ii = 0.0; ii < interval; ii += step_size) {
-		vec2 ray = (rxy + (delta * ii)) * inv_size;
+		vec2 ray = (rxy + (delta * min(ii, interval - 1.0))) * inv_size;
 		if (floor(ray) != vec2(0.0)) break;
 		vec4 emiss = LINEAR(texture2D(world_emissv, rotate(ray, cascade_frustum)));
 		vec4 absrp = LINEAR(texture2D(world_absorp, rotate(ray, cascade_frustum)));
