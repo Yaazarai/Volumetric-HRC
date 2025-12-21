@@ -1,7 +1,7 @@
 Constant and real-time per-pixel volumetrics using ray-extensions via [Holographic Radiance Cascades](https://arxiv.org/abs/2505.02041). This implementation is the closest good-faith reproduction of the paper that I can manage with minor modifications to make setup easier and to reduce overall aliasing.
 
 https://github.com/user-attachments/assets/ff941093-3b06-4b8b-ab77-c965a6c42fa6
-<p align="center">Simple 2048 x 2048 volumetric scene rendered on an RTX 3080 in 9ms.</p>
+<p align="center">Simple 2048 x 2048 volumetric scene rendered on an RTX 3080 in 11-12ms.</p>
 
 ### How HRC Works
 The premise of HRC is simple, cast rays in a 90-degree cone from every probe. The number of probes in the scene decreases along one-axis only (perpendicular to the frustum direction). This means we cast probes as planes evenly distributed throughout the scene and each successive cascade has 1/2x as many probes and 2x as many rays per probe. To be precise the exact number of rays-per-probe for each cascade is actually `pow2(N)+1`, where we cast one ray for every 2 pixels across the full width of the frustum of each cascade: `frustum_width = pow(2.0, cascade_index) * 2.0 + 1.0`. As the width of the frustum grows as the distance between planes in higher cascades increases.
@@ -26,7 +26,7 @@ Producing the cones is as simple as looking up the left/right rays that bound th
 Considering that we're casting "planes of probes," which produces discretely rectangular radiance, rays must also be weighted to produce the appropriate output fluence. Each cone of cN represents a fraction of the angular span of the full frustum and the left/right rays of the cone each represent 1/2 of that total angular span. So then to weight the rays we multiple each ray by 1/2 the cone's angular span BEFORE merging. This is done by multiplying each ray by 1/2 of `atan(right.y / right.x) - atan(left.y / left.x)`, where `atan()` here gives us the angle of each ray and we take the difference between the left/right rays as the angular span of the cone.
 <img width="796" height="771" alt="image" src="https://github.com/user-attachments/assets/c0ba6478-3b7e-4b55-a122-e50a59bbfb57" />
 
-We have two edge cases for merging: even & odd planes. Even plane's line up perfectly with cN+1 can merge with the nearest cN+1 plane.
+We have two edge cases for merging: even & odd planes. Odd plane's line up perfectly with cN+1 can merge with the nearest cN+1 plane.
 <img width="874" height="356" alt="image" src="https://github.com/user-attachments/assets/9be45c5b-bb02-4e23-bc42-d5f478d7f3d1" />
 
 However even planes cannot. To solve this we need to cast 2x length rays for even plans and merge twice. Once for the near plane and once again for the far plane. We then take the MERGED results of both planes and interpolate their fluence. Interpolating before merging will break volumetrics. This strategy interpolates the FLUENCE (radiance at a point) not the relative position between both planes. This means you must merge the near and far planes as separate points of fluence and then interpolate them afterwards for the correct result. Note that since I am utilizing ray-extensions--I extend my rays to hit that 2x length during merging rather than raytracing, but the same idea applies.
@@ -47,7 +47,7 @@ Implementation provided in GameMaker and should run with the free-version. Scene
 * 1024 x 1024 ~ 5-6ms.
 * 2048 x 2048 ~ 9-11ms.
 * 4096 x 4096 ~ 35-45ms.
-* 8,192 x 8,192 ~ 2,000ms / Crash (memory bound).
+* 8192 x 8192 ~ 2000ms / Crash (memory bound).
 
 ### Improving Performance
 While the current implementation is fast--especially considering its running per-pixel volumetrics--there is still room for improvement. The shaders can be modified to cast only 1/2x as many probes along each plane, then allow rays to interpolate between those probes when extending/merging. This will provide slight aliasing, but double performance where needed.
