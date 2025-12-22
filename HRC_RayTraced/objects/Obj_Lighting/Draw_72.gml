@@ -21,7 +21,7 @@ gpu_set_blendmode(bm_add);
 	draw_circle(mx, my, light_size, false);
 	
 	draw_set_color($444444);
-	draw_circle(floor(render_extent / 2), floor(render_extent / 2), light_size * 2.0, false);
+	draw_circle(floor(render_extent / 2), floor(render_extent / 2), light_size * 3.0, false);
 	
 gpu_set_blendmode(bm_normal);
 surface_reset_target();

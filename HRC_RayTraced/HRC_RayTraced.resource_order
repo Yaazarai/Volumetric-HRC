@@ -18,6 +18,6 @@
   ],
   "ResourceOrderSettings":[
     {"name":"Shd_FluenceSUM","order":1,"path":"shaders/Shd_FluenceSUM/Shd_FluenceSUM.yy",},
-    {"name":"Shd_MergingHRC","order":2,"path":"shaders/Shd_MergingHRC/Shd_MergingHRC.yy",},
+    {"name":"Shd_MergingHRC","order":3,"path":"shaders/Shd_MergingHRC/Shd_MergingHRC.yy",},
   ],
 }
