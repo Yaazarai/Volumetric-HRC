@@ -20,29 +20,27 @@ vec2 rotate(vec2 uvcoord, float frustum) {
 }
 
 // Raytrace the scene, but using rotated UV coordinates for right-facing only frustums.
-void trace(vec2 rxy, vec2 dxy, float interval, out vec4 radiance, out vec4 transmit) {
-	radiance = vec4(0.0);
-	transmit = vec4(1.0);
-	
+void trace(vec2 rxy, vec2 dxy, float interval, inout vec4 radiance, inout vec4 transmit) {
 	///////////////////////////////////////////////
 	// Cosign term for sampling higher at an angle.
 	float theta = atan(dxy.y / dxy.x);
-	float step_size = abs(cos(theta));
+	float step_size = 1.0;//abs(cos(theta));
 	///////////////////////////////////////////////
 	
 	vec2 delta = dxy / max(abs(dxy.x), abs(dxy.y));
+	float step_length = length(delta);
 	vec2 inv_size = 1.0 / cascade_size;
 	for(float ii = 0.0; ii < interval; ii += step_size) {
+		vec2 rayxy = rxy + (delta * min(ii, interval - 1.0));
 		vec2 ray = (rxy + (delta * min(ii, interval - 1.0))) * inv_size;
 		if (floor(ray) != vec2(0.0)) break;
 		vec4 emiss = LINEAR(texture2D(world_emissv, rotate(ray, cascade_frustum)));
 		vec4 absrp = LINEAR(texture2D(world_absorp, rotate(ray, cascade_frustum)));
 		
 		// Covnert emissivity and absorption to radiance and transmittance.
-		vec4 trans = exp(-absrp);
-		vec4 radnc = (1.0 - trans) * emiss;
-		
-		// Merge the radiance and transmittance.
+		vec4 optic = absrp * step_length;
+		vec4 trans = exp(-optic);
+		vec4 radnc = emiss * (1.0 - trans);
 		radiance += radnc * transmit;
 		transmit *= trans;
 	}
@@ -55,7 +53,7 @@ vec4 mergeRadiance(vec4 radiance, vec4 transmit, vec4 merged) {
 
 // Get the volumetric cone of cascade CN+1.
 vec4 getConeVolume(vec2 probe, float index) {
-	vec2 samplePos = vec2(floor(probe.x) + index + 0.5, floor(probe.y) + 0.5) / cascade_size;
+	vec2 samplePos = vec2(probe.x + index, probe.y) / cascade_size;
 	return mix(texture2D(cascade_prev, samplePos), vec4(0.0, 0.0, 0.0, 0.0), float(floor(samplePos) != vec2(0.0)));
 }
 
@@ -75,7 +73,7 @@ vec4 mergeCones(vec2 probe, float plane, float index, float intrv, float vrays) 
 	// Compute the weight of this cone (total cone width).
 	vec2  merge_left = align * (limit + vec2(0.0, left * 2.0));
 	vec2  merge_right = align * (limit + vec2(0.0, right * 2.0));
-	float weight = abs(atan(merge_right.y / merge_right.x) - atan(merge_left.y / merge_left.x));
+	float weight = 0.5 * (atan(merge_right.y / merge_right.x) - atan(merge_left.y / merge_left.x));
 	
 	// Trace + Merge left & right side of the cone with the nearest far plane of cN+1.
 	vec4 radiance_left = traceAndMerge(probe, merge_left, intrv * align, weight, index * 2.0);
@@ -101,6 +99,9 @@ void main() {
 	float index = floor(texel.x - (plane * intrv));
 	vec2  probe = vec2(plane * intrv, texel.y) + vec2(0.5, 0.0);
 	gl_FragColor = mergeCones(probe, plane, index, intrv, vrays);
+	
+	//if (mod(floor(texel.y), 2.0) == 0.0 && cascade_index.x > 0.5)
+	//	gl_FragColor = vec4(0.0);
 }
 
 /*

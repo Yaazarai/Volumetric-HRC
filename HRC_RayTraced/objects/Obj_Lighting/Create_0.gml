@@ -2,7 +2,7 @@ surface_resize(application_surface, 1024, 1024);
 surface_depth_disable(false);
 game_set_speed(144, gamespeed_fps);
 
-light_size = 8;
+light_size = 4;
 
 render_extent = 256;
 render_count = ceil(log2(render_extent));
