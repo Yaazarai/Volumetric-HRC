@@ -31,7 +31,7 @@ void mergeCone(vec2 probe, float plane, float intrv, float vrays, float index, f
 	vec2  merge = probe + align * (limit + vec2(0.0, vrayI * 2.0));
 	vec2  vrayLL = (limit * 2.0) + vec2(0.0, (coneI * 2.0));
 	vec2  vrayRR = (limit * 2.0) + vec2(0.0, (coneI + 1.0) * 2.0);
-	float coneW = atan(vrayRR.y / vrayRR.x) - atan(vrayLL.y / vrayLL.x);
+	float coneW = 0.5 * (atan(vrayRR.y / vrayRR.x) - atan(vrayLL.y / vrayLL.x));
 	
 	vec4  vrayR, vrayT, coneFarR, coneFarT;
 	getVolume(probe, vrayI, intrv, vrays, vrays_size, vrays_radiance, vrays_transmit, vec4(0.0), vec4(1.0), vrayR, vrayT);
