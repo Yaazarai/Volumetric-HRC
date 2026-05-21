@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"Shd_MergingAAHRC",
+  "name":"Shd_MergingAAHRC",
+  "parent":{
+    "name":"Shaders",
+    "path":"folders/Shaders.yy",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

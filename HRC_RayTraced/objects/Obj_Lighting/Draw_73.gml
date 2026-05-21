@@ -19,7 +19,6 @@ gpu_set_tex_filter(false);
 			shader_texture(merginghrc_u_Emissivity, surface_source(render_emissv));
 			shader_texture(merginghrc_u_Absorption, surface_source(render_absorp));
 				surface_set_target(surface_source(merge_radiance[i]));
-					draw_clear_alpha(c_black, 0);
 					draw_sprite_stretched(Spr_SurfaceTexture, 0, 0, 0, render_extent, render_extent);
 				surface_reset_target();
 			shader_reset();
@@ -27,7 +26,6 @@ gpu_set_tex_filter(false);
 		
 		// Capture frustum fluence after merging.
 		surface_set_target(surface_source(render_frustums[j]));
-			draw_clear_alpha(c_black, 0);
 			draw_surface(surface_source(merge_radiance[0]), 0, 0);
 		surface_reset_target();
 	}
@@ -40,7 +38,6 @@ gpu_set_tex_filter(false);
 	shader_texture(fluencesum_u_Frustum2, surface_source(render_frustums[2]));
 	shader_texture(fluencesum_u_Frustum3, surface_source(render_frustums[3]));
 		surface_set_target(surface_source(render_fluences));
-			draw_clear_alpha(c_black, 0);
 			draw_sprite_stretched(Spr_SurfaceTexture, 0, 0, 0, render_extent, render_extent);
 		surface_reset_target();
 	shader_reset();
@@ -51,7 +48,7 @@ gpu_set_tex_filter(gpu_filter);
 
 var xx = 1024 / render_extent;
 draw_surface_ext(surface_source(render_fluences), 0, 0, xx, xx, 0, c_white, 1.0);
-//draw_surface_ext(surface_source(render_frustums[0]), 0, 0, xx, xx, 0, c_white, 1.0);
+//draw_surface_ext(surface_source(merge_radiance[0]), 0, 0, xx, xx, 0, c_white, 1.0);
 
 draw_set_color(c_yellow);
 draw_set_font(Fnt_PixelFont);

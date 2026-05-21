@@ -6,8 +6,10 @@ surface_set_target(render_emissv.memory);
 draw_clear_alpha(c_black, 0);
 //gpu_set_blendmode(bm_add);
 	
+	//draw_sprite(Spr_Emission, 0, 0, 0);
 	draw_set_color($FFFFFF);
 	draw_circle(mx, my, light_size, false);
+	//draw_circle_color(mx, my, light_size*2.0, c_white, c_black, false);
 	
 //gpu_set_blendmode(bm_normal);
 surface_reset_target();
@@ -17,11 +19,13 @@ surface_set_target(render_absorp.memory);
 draw_clear_alpha(c_black, 0);
 gpu_set_blendmode(bm_add);
 	
+	//draw_sprite(Spr_Absorption, 0, 0, 0);
 	draw_set_color($FFFFFF);
 	draw_circle(mx, my, light_size, false);
+	//draw_circle_color(mx, my, light_size, c_white, c_dkgray, false);
 	
-	draw_set_color($FFFFFF);
-	draw_circle(floor(render_extent / 2), floor(render_extent / 2), light_size, false);
+	//draw_set_color($FFFFFF);
+	//draw_circle(floor(render_extent / 2), floor(render_extent / 2), light_size * 2.0, false);
 	
 gpu_set_blendmode(bm_normal);
 surface_reset_target();

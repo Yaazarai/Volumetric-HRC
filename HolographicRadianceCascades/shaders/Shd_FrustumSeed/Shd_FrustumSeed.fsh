@@ -22,7 +22,7 @@ void main() {
 	
 	vec3 emiss = LINEAR(texture2D(emissivity, offsets[int(frustum_index)]).rgb);
 	vec3 absrp = LINEAR(texture2D(absorption, offsets[int(frustum_index)]).rgb);
-	vec3 transmit = exp(-absrp);
+	vec3 transmit = exp2(-absrp);
 	vec3 radiance = (1.0 - transmit) * emiss;
 	gl_FragData[0] = vec4(radiance, 1.0);
 	gl_FragData[1] = vec4(transmit, 1.0);

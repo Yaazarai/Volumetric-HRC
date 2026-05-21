@@ -72,7 +72,7 @@ gpu_set_tex_filter(false);
 		
 		surface_set_target(surface_source(render_frustum[j]));
 			draw_clear_alpha(c_black, 0);
-			draw_surface(surface_source(merge_radiance[0]), 0, 0);
+			draw_surface(surface_source(merge_radiance[render_index]), 0, 0);
 		surface_reset_target();
 	}
 	
@@ -94,7 +94,7 @@ gpu_set_texrepeat(gpu_texrepeat);
 gpu_set_tex_filter(gpu_filter);
 
 var xx = view_hport[0] / render_extent;
-draw_surface_ext(surface_source(render_fluence), 0, 0, xx, xx, 0, c_white, 1.0);
+draw_surface_ext(surface_source(render_fluence), 0, 0, 1, 1, 0, c_white, 1.0);
 draw_set_color(c_yellow);
 draw_set_font(Spr_PixelFont);
 draw_text(5,  5, "Frame Time:   " + string(delta_time / 1000) + "ms / " + string(1000 * (1.0/game_get_speed(gamespeed_fps))) + "ms");

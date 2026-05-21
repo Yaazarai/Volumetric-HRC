@@ -19,5 +19,7 @@
   "ResourceOrderSettings":[
     {"name":"Shd_FluenceSUM","order":1,"path":"shaders/Shd_FluenceSUM/Shd_FluenceSUM.yy",},
     {"name":"Shd_MergingHRC","order":3,"path":"shaders/Shd_MergingHRC/Shd_MergingHRC.yy",},
+    {"name":"Spr_Absorption","order":2,"path":"sprites/Spr_Absorption/Spr_Absorption.yy",},
+    {"name":"Spr_Emission","order":3,"path":"sprites/Spr_Emission/Spr_Emission.yy",},
   ],
 }

@@ -40,6 +40,8 @@
     {"id":{"name":"Scr_HelperFunctions","path":"scripts/Scr_HelperFunctions/Scr_HelperFunctions.yy",},},
     {"id":{"name":"Shd_FluenceSUM","path":"shaders/Shd_FluenceSUM/Shd_FluenceSUM.yy",},},
     {"id":{"name":"Shd_MergingHRC","path":"shaders/Shd_MergingHRC/Shd_MergingHRC.yy",},},
+    {"id":{"name":"Spr_Absorption","path":"sprites/Spr_Absorption/Spr_Absorption.yy",},},
+    {"id":{"name":"Spr_Emission","path":"sprites/Spr_Emission/Spr_Emission.yy",},},
     {"id":{"name":"Spr_SurfaceTexture","path":"sprites/Spr_SurfaceTexture/Spr_SurfaceTexture.yy",},},
   ],
   "resourceType":"GMProject",

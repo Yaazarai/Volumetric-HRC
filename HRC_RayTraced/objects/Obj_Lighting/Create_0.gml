@@ -1,12 +1,13 @@
 surface_resize(application_surface, 1024, 1024);
 surface_depth_disable(false);
-game_set_speed(144, gamespeed_fps);
+game_set_speed(144*4, gamespeed_fps);
 
-light_size = 4;
+light_size = 8;
 
-render_extent = 256;
+render_extent = 512;
 render_count = ceil(log2(render_extent));
 render_extent = power(2, render_count);
+show_debug_message(render_count);
 
 render_surflist = ds_list_create();
 render_radiance = array_create(render_count, INVALID_SURFACE);
