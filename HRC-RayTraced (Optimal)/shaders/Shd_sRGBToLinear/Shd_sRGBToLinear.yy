@@ -1,0 +1,12 @@
+{
+  "$GMShader":"",
+  "%Name":"Shd_sRGBToLinear",
+  "name":"Shd_sRGBToLinear",
+  "parent":{
+    "name":"Shaders",
+    "path":"folders/Shaders.yy",
+  },
+  "resourceType":"GMShader",
+  "resourceVersion":"2.0",
+  "type":1,
+}

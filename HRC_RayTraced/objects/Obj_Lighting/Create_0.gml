@@ -4,7 +4,7 @@ game_set_speed(144*4, gamespeed_fps);
 
 light_size = 8;
 
-render_extent = 512;
+render_extent = 1024;
 render_count = ceil(log2(render_extent));
 render_extent = power(2, render_count);
 show_debug_message(render_count);
